@@ -1,8 +1,10 @@
+// import 'package:ecommerce/screen/profile/paymetMethods.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'Address.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'Address.dart';
 import 'editProfile.dart';
+// import 'myOrders.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -147,6 +149,27 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 10),
 
+            /// --- My Orders ---
+            // ListTile(
+            //   leading: const Icon(Icons.shopping_bag_outlined,
+            //       color: Colors.black87),
+            //   title: const Text(
+            //     "My Orders",
+            //     style: TextStyle(color: Colors.black87),
+            //   ),
+            //   trailing: const Icon(Icons.arrow_forward_ios,
+            //       size: 16, color: Colors.black54),
+            //   onTap: () {
+            //     // 🔹 Navigate to My Orders Page
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => const MyOrdersPage()),
+            //     );
+            //   },
+            // ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            /// --- Saved Addresses ---
             ListTile(
               leading: const Icon(Icons.location_on_outlined,
                   color: Colors.black87),
@@ -163,6 +186,37 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
               },
             ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+
+            ElevatedButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut(); // 👈 Sign out the user
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: const Text("Log Out"),
+            ),
+
+            /// --- Payment Methods ---
+            // ListTile(
+            //   leading: const Icon(Icons.credit_card_outlined,
+            //       color: Colors.black87),
+            //   title: const Text(
+            //     "Payment Methods",
+            //     style: TextStyle(color: Colors.black87),
+            //   ),
+            //   trailing: const Icon(Icons.arrow_forward_ios,
+            //       size: 16, color: Colors.black54),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //           builder: (context) => const PaymentMethodsPage()),
+            //     );
+            //   },
+            // ),
             const Divider(thickness: 1, color: Colors.black12),
           ],
         ),

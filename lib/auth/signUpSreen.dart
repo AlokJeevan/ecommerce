@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/auth/signInScreen.dart';
 import 'package:ecommerce/auth/wrapper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,11 +21,77 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  signUp()async{
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text, password: passwordController.text);
-    Get.to(Wrapper());
+  Future<void> signUp() async {
+    try {
+      // Create user in Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      // Get the created user
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // Save user info to Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'email': user.email,
+          'displayName': '', // optional, can be updated later
+          'photoURL': '',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      // Go to wrapper after signup success
+      Get.to(Wrapper());
+    } on FirebaseAuthException catch (e) {
+      String message = 'An error occurred.';
+      if (e.code == 'email-already-in-use') {
+        message = 'This email is already registered.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email format.';
+      } else if (e.code == 'weak-password') {
+        message = 'Your password is too weak.';
+      }
+
+      Get.snackbar('Sign Up Failed', message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar('Error', e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white);
+    }
   }
+
+//   signUp()async{
+//     try{
+//       await FirebaseAuth.instance.createUserWithEmailAndPassword(
+//           email: emailController.text,
+//           password: passwordController.text);
+//
+//       // make sure user data is in firestore
+// // Get the created user
+//       User? user = userCredential.user;
+//
+//       if (user != null) {
+//         // Save user info to Firestore
+//         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+//           'uid': user.uid,
+//           'email': user.email,
+//           'displayName': '', // optional, can be updated later
+//           'photoURL': '',
+//           'createdAt': FieldValue.serverTimestamp(),
+//         });
+//       }
+//     }
+//
+//     Get.to(Wrapper());
+//   }
 
   @override
   Widget build(BuildContext context) {

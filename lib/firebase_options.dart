@@ -41,50 +41,53 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCMTkUCA6FlS-eZjc6bXGqejI71yOU3DNs',
-    appId: '1:624452197062:web:1b6d26667c007700cc15c7',
-    messagingSenderId: '624452197062',
-    projectId: 'shoepify-6828b',
-    authDomain: 'shoepify-6828b.firebaseapp.com',
-    storageBucket: 'shoepify-6828b.firebasestorage.app',
-    measurementId: 'G-HP4XQPYWPC',
+    apiKey: 'AIzaSyBjZOKFT1VDe-pnU7uTZ54EyMTW0EI9pD4',
+    appId: '1:983510944871:web:c2b37842cb70430b65d8c2',
+    messagingSenderId: '983510944871',
+    projectId: 'ecommerce-5594a',
+    authDomain: 'ecommerce-5594a.firebaseapp.com',
+    storageBucket: 'ecommerce-5594a.firebasestorage.app',
+    measurementId: 'G-C7XWZXF2ZS',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBML2i6t-SDEiv3Sbaz5Dd8Zgl-vJV-SFo',
-    appId: '1:624452197062:android:9246282bc26a5175cc15c7',
-    messagingSenderId: '624452197062',
-    projectId: 'shoepify-6828b',
-    storageBucket: 'shoepify-6828b.firebasestorage.app',
+    apiKey: 'AIzaSyBZMhqC7b_9qei51oKfV_Yoe0j3BXRV12w',
+    appId: '1:983510944871:android:b374b8c27e8e871365d8c2',
+    messagingSenderId: '983510944871',
+    projectId: 'ecommerce-5594a',
+    storageBucket: 'ecommerce-5594a.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCnGRQ-YALSnUSyxXKTOVY7zl1mSuGXNFc',
-    appId: '1:624452197062:ios:d9af1ef67cb32a21cc15c7',
-    messagingSenderId: '624452197062',
-    projectId: 'shoepify-6828b',
-    storageBucket: 'shoepify-6828b.firebasestorage.app',
-    iosClientId: '624452197062-tpmusnvugoua8ocrphtkqg1aflt9cjhj.apps.googleusercontent.com',
+    apiKey: 'AIzaSyD71KW5-aznKveJziYR5GPKN1RXN9h_lzI',
+    appId: '1:983510944871:ios:bd728e960b13b5b665d8c2',
+    messagingSenderId: '983510944871',
+    projectId: 'ecommerce-5594a',
+    storageBucket: 'ecommerce-5594a.firebasestorage.app',
+    androidClientId: '983510944871-61bebai0688uokrim6m72mo9a6au404c.apps.googleusercontent.com',
+    iosClientId: '983510944871-p85t5099bcodg0knsl2f45dv31372orq.apps.googleusercontent.com',
     iosBundleId: 'com.example.ecommerce',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCnGRQ-YALSnUSyxXKTOVY7zl1mSuGXNFc',
-    appId: '1:624452197062:ios:d9af1ef67cb32a21cc15c7',
-    messagingSenderId: '624452197062',
-    projectId: 'shoepify-6828b',
-    storageBucket: 'shoepify-6828b.firebasestorage.app',
-    iosClientId: '624452197062-tpmusnvugoua8ocrphtkqg1aflt9cjhj.apps.googleusercontent.com',
+    apiKey: 'AIzaSyD71KW5-aznKveJziYR5GPKN1RXN9h_lzI',
+    appId: '1:983510944871:ios:bd728e960b13b5b665d8c2',
+    messagingSenderId: '983510944871',
+    projectId: 'ecommerce-5594a',
+    storageBucket: 'ecommerce-5594a.firebasestorage.app',
+    androidClientId: '983510944871-61bebai0688uokrim6m72mo9a6au404c.apps.googleusercontent.com',
+    iosClientId: '983510944871-p85t5099bcodg0knsl2f45dv31372orq.apps.googleusercontent.com',
     iosBundleId: 'com.example.ecommerce',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCMTkUCA6FlS-eZjc6bXGqejI71yOU3DNs',
-    appId: '1:624452197062:web:176ca0cc43679465cc15c7',
-    messagingSenderId: '624452197062',
-    projectId: 'shoepify-6828b',
-    authDomain: 'shoepify-6828b.firebaseapp.com',
-    storageBucket: 'shoepify-6828b.firebasestorage.app',
-    measurementId: 'G-EXL5C8XMEJ',
+    apiKey: 'AIzaSyBjZOKFT1VDe-pnU7uTZ54EyMTW0EI9pD4',
+    appId: '1:983510944871:web:9e8ff9e4a702145965d8c2',
+    messagingSenderId: '983510944871',
+    projectId: 'ecommerce-5594a',
+    authDomain: 'ecommerce-5594a.firebaseapp.com',
+    storageBucket: 'ecommerce-5594a.firebasestorage.app',
+    measurementId: 'G-NGJ8VVY3MG',
   );
+
 }
