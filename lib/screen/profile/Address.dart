@@ -23,6 +23,56 @@ class _AddressState extends State<Address> {
 
     final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
 
+    Future<void> _editAddress(
+        BuildContext context, String oldAddress, DocumentReference userDocRef) async {
+      final controller = TextEditingController(text: oldAddress);
+
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Edit Address"),
+          content: TextField(
+            controller: controller,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              hintText: "Enter new address",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newAddress = controller.text.trim();
+                if (newAddress.isEmpty) return;
+
+                // 1️⃣ Remove old address
+                await userDocRef.update({
+                  'address': FieldValue.arrayRemove([oldAddress])
+                });
+
+                // 2️⃣ Add new address
+                await userDocRef.update({
+                  'address': FieldValue.arrayUnion([newAddress])
+                });
+
+                // Close dialog
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Address updated successfully")),
+                );
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your Addresses"),
@@ -31,7 +81,10 @@ class _AddressState extends State<Address> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              AddAddress();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddAddress()),
+              );
             },
           ),
         ],
@@ -63,6 +116,7 @@ class _AddressState extends State<Address> {
               return ListTile(
                 leading: const Icon(Icons.home),
                 title: Text(addresses[index]),
+                onTap: () => _editAddress(context, addresses[index], userDocRef),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () async {
@@ -79,4 +133,14 @@ class _AddressState extends State<Address> {
       ),
     );
   }
+
+
+
+
+
+
+
+
+
+
 }

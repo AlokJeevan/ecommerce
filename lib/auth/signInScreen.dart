@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/auth/signUpSreen.dart';
 import 'package:ecommerce/auth/wrapper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,12 +27,35 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
+  Future<void> checkOrCreateUserInFirestore(User user) async {
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    final docSnapshot = await userDoc.get();
+
+    if (!docSnapshot.exists) {
+      // Create user document if not found
+      await userDoc.set({
+        'uid': user.uid,
+        'email': user.email,
+        'displayName': user.displayName ?? '',
+        'photoURL': user.photoURL ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
   Future<void> signInEmail() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await checkOrCreateUserInFirestore(user); // 👈 ensure Firestore record exists
+      }
+
       setState(() {
         errorMessage = null; // clear errors
       });
@@ -76,8 +100,17 @@ class _SignInScreenState extends State<SignInScreen> {
         accessToken: googleAuth.accessToken,
       );
 
+
+      UserCredential? userCred = await FirebaseAuth.instance.signInWithCredential(credential);
+
+      final user = userCred.user;
+      if (user != null) {
+        await checkOrCreateUserInFirestore(user);
+      }
+      return userCred;
+
       // Sign in to Firebase
-      return await FirebaseAuth.instance.signInWithCredential(credential);
+      // return await FirebaseAuth.instance.signInWithCredential(credential);
     } catch (e) {
       print("Google sign-in error: $e");
       return null;
@@ -267,6 +300,8 @@ class _SignInScreenState extends State<SignInScreen> {
                           onPressed: () async {
                         UserCredential? user = await signInWithGoogle();
                         if (user != null) {
+                          // check user data at firestore
+
                         Get.offAll(Wrapper());
                         }
                         },
