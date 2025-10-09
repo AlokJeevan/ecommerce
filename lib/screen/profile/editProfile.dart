@@ -50,7 +50,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       }
 
       setState(() {
-        userName = data['name'] ?? 'Unknown';
+        userName = data['displayname'] ?? 'Unknown';
         userGender = data['gender'] ?? 'unknown';
         userEmail = FirebaseAuth.instance.currentUser?.email ?? 'No Email';
 
@@ -64,12 +64,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (userId == null) return;
 
     await FirebaseFirestore.instance.collection('users').doc(userId).update({
-      'name': _nameController.text.trim(),
+      'displayname': _nameController.text.trim(),
       'gender': _selectedGender ?? 'unknown',
     });
 
     Navigator.pop(context, {
-      'name': _nameController.text.trim(),
+      'displayname': _nameController.text.trim(),
       'gender': _selectedGender ?? 'unknown',
     });
   }

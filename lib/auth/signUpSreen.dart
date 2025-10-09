@@ -3,7 +3,6 @@ import 'package:ecommerce/auth/signInScreen.dart';
 import 'package:ecommerce/auth/wrapper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,8 +12,6 @@ class SignUpScreen extends StatefulWidget {
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
-
-// final databaseReference = FirebaseFirestore.instance.ref("storeData");
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController emailController = TextEditingController();
@@ -38,7 +35,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'uid': user.uid,
           'email': user.email,
-          'displayName': '', // optional, can be updated later
+          'displayName': '',
           'photoURL': '',
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -68,31 +65,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-//   signUp()async{
-//     try{
-//       await FirebaseAuth.instance.createUserWithEmailAndPassword(
-//           email: emailController.text,
-//           password: passwordController.text);
-//
-//       // make sure user data is in firestore
-// // Get the created user
-//       User? user = userCredential.user;
-//
-//       if (user != null) {
-//         // Save user info to Firestore
-//         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-//           'uid': user.uid,
-//           'email': user.email,
-//           'displayName': '', // optional, can be updated later
-//           'photoURL': '',
-//           'createdAt': FieldValue.serverTimestamp(),
-//         });
-//       }
-//     }
-//
-//     Get.to(Wrapper());
-//   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,7 +78,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 120),
+                    const SizedBox(height: 20),
+
+                    // 🔙 Back button
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back,
+                            size: 28, color: Colors.black),
+                        onPressed: () {
+                          Get.off(() => SignInScreen());
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
 
                     // App name
                     Text(
@@ -120,9 +106,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 30),
 
                     // Create account text
-                    Text(
+                    const Text(
                       "Create an account",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -194,7 +180,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: (()=>signUp()),
+                        onPressed: () => signUp(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,

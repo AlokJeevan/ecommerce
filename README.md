@@ -1,5 +1,7 @@
 # ecommerce
 
+- [ ] When user purchase product, need to make sure , the 
+
 A new Flutter project.
 
 ## Getting Started

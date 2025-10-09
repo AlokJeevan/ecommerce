@@ -10,109 +10,80 @@ class AddAddress extends StatefulWidget {
 }
 
 class _AddAddressState extends State<AddAddress> {
+  final TextEditingController _controller = TextEditingController();
+  bool _isSaving = false;
 
-  Future<void> addAddress(String address) async {
+  Future<void> addAddress() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    await FirebaseFirestore.instance
-        .collection("users")
-        .doc(user.uid) // user-specific document
-        .collection("addresses")
-        .add({
-      "address": address,
-      "createdAt": FieldValue.serverTimestamp(),
-    });
-  }
+    final address = _controller.text.trim();
+    if (address.isEmpty) return;
 
-  Stream<List<String>> getAddresses() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return const Stream.empty();
-
-    return FirebaseFirestore.instance
-        .collection("users")
-        .doc(user.uid)
-        .collection("addresses")
-        .orderBy("createdAt", descending: true)
-        .snapshots()
-        .map((snapshot) =>
-        snapshot.docs.map((doc) => doc["address"] as String).toList());
-  }
-
-
-  Future<void> deleteAddress(String docId) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    setState(() => _isSaving = true);
 
     await FirebaseFirestore.instance
         .collection("users")
         .doc(user.uid)
-        .collection("addresses")
-        .doc(docId)
-        .delete();
-  }
+        .set({
+      "address": FieldValue.arrayUnion([address]),
+    }, SetOptions(merge: true));
 
+    setState(() => _isSaving = false);
+
+    if (mounted) {
+      Navigator.pop(context); // Go back to address list
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Address added successfully")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Add New Address"),
+        centerTitle: true,
       ),
-
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              "Enter your new address:",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: "e.g. 123 Main Street, Taipei",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade100,
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _isSaving ? null : addAddress,
+              icon: const Icon(Icons.save),
+              label: Text(_isSaving ? "Saving..." : "Save Address"),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                textStyle: const TextStyle(fontSize: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
-
-
-
-// void _addAddress(BuildContext context, DocumentReference<Map<String, dynamic>> userDocRef) {
-//   final TextEditingController controller = TextEditingController();
-//   final List<String> _addresses = []; // Local list for addresses
-//   final userId = FirebaseAuth.instance.currentUser?.uid;
-//
-//
-//   showDialog(
-//     context: context,
-//     builder: (context) {
-//       return AlertDialog(
-//         title: const Text("Add New Address"),
-//         content: TextField(
-//           controller: controller,
-//           decoration: const InputDecoration(hintText: "Enter your address"),
-//         ),
-//         actions: [
-//           TextButton(
-//             onPressed: () => Navigator.pop(context), // Cancel
-//             child: const Text("Cancel"),
-//           ),
-//           ElevatedButton(
-//             onPressed: () async {
-//               final address = controller.text.trim();
-//               if (address.isNotEmpty) {
-//                 setState(() {
-//                   _addresses.add(address);
-//                 });
-//
-//                 // Optional: Save to Firestore
-//                 if (userId != null) {
-//                   final userDocRef =
-//                   FirebaseFirestore.instance.collection('users').doc(userId);
-//
-//                   // If "address" field is a list
-//                   await userDocRef.set({
-//                     'address': FieldValue.arrayUnion([address])
-//                   }, SetOptions(merge: true));
-//                 }
-//
-//                 Navigator.pop(context); // Close dialog
-//               }
-//             },
-//             child: const Text("Add"),
-//           ),
-//         ],
-//       );
-//     },
-//   );
-//
-// }

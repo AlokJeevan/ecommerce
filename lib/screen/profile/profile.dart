@@ -1,10 +1,12 @@
-// import 'package:ecommerce/screen/profile/paymetMethods.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/screen/profile/paymetMethods.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../auth/signInScreen.dart';
 import 'Address.dart';
 import 'editProfile.dart';
-// import 'myOrders.dart';
+import 'myOrders.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -25,14 +27,40 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserInfo();
   }
 
-  void _loadUserInfo() {
+  void _loadUserInfo() async {
     final user = _auth.currentUser;
-    if (user != null) {
+    if (user == null) return;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
       setState(() {
-        userName = user.displayName ?? "User";
-        userEmail = user.email ?? "No email";
+        userName = (data['displayname'] ?? 'User').toLowerCase();
+        userEmail = data['email'] ?? user.email ?? 'No email';
+        userGender = data['gender'] ?? 'unknown';
+      });
+    } else {
+      // fallback if Firestore doc missing
+      setState(() {
+        userName = (user.displayName ?? 'User').toLowerCase();
+        userEmail = user.email ?? 'No email';
       });
     }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await _auth.signOut();
+    if (!mounted) return;
+
+    // 🔹 Navigate to login screen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => SignInScreen()),
+    );
   }
 
   @override
@@ -41,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: const Text("My Profile"),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey.shade100,
         elevation: 0.5,
         centerTitle: true,
         foregroundColor: Colors.black,
@@ -54,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              color: Colors.grey.shade200,
+              color: Colors.grey.shade100,
               child: Row(
                 children: [
                   // --- Profile Avatar (FontAwesome icon changes based on gender) ---
@@ -64,7 +92,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: FaIcon(
                       userGender == "Male"
                           ? FontAwesomeIcons.person
-                          : FontAwesomeIcons.personDress,
+                          : userGender == "Female"
+                          ? FontAwesomeIcons.personDress
+                          : FontAwesomeIcons.user, // default neutral icon
                       size: 45,
                       color: Colors.black87,
                     ),
@@ -117,11 +147,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                             if (result != null) {
                               setState(() {
-                                userName = result['name'];
+                                userName = result['displayname'];
                                 userGender = result['gender'];
                               });
                               await _auth.currentUser!
-                                  .updateDisplayName(result['name']);
+                                  .updateDisplayName(result['displayname']);
                             }
                           },
                         ),
@@ -150,23 +180,23 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 10),
 
             /// --- My Orders ---
-            // ListTile(
-            //   leading: const Icon(Icons.shopping_bag_outlined,
-            //       color: Colors.black87),
-            //   title: const Text(
-            //     "My Orders",
-            //     style: TextStyle(color: Colors.black87),
-            //   ),
-            //   trailing: const Icon(Icons.arrow_forward_ios,
-            //       size: 16, color: Colors.black54),
-            //   onTap: () {
-            //     // 🔹 Navigate to My Orders Page
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => const MyOrdersPage()),
-            //     );
-            //   },
-            // ),
+            ListTile(
+              leading: const Icon(Icons.shopping_bag_outlined,
+                  color: Colors.black87),
+              title: const Text(
+                "My Orders",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                // 🔹 Navigate to My Orders Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyOrdersPage()),
+                );
+              },
+            ),
             const Divider(thickness: 1, color: Colors.black12),
 
             /// --- Saved Addresses ---
@@ -188,36 +218,51 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const Divider(thickness: 1, color: Colors.black12),
 
-
-            ElevatedButton(
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut(); // 👈 Sign out the user
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+            /// --- Payment Methods ---
+            ListTile(
+              leading: const Icon(Icons.credit_card_outlined,
+                  color: Colors.black87),
+              title: const Text(
+                "Payment Methods",
+                style: TextStyle(color: Colors.black87),
               ),
-              child: const Text("Log Out"),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const PaymentMethodsPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            const SizedBox(height: 30),
+
+            /// --- Logout Button ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.logout, color: Colors.black87, size: 18),
+                label: const Text(
+                  "Logout",
+                  style: TextStyle(color: Colors.black87, fontSize: 16),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.black45),
+                  foregroundColor: Colors.black87,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  minimumSize: const Size(double.infinity, 45),
+                ),
+                onPressed: () async {
+                  await _logout(context);
+                },
+              ),
             ),
 
-            /// --- Payment Methods ---
-            // ListTile(
-            //   leading: const Icon(Icons.credit_card_outlined,
-            //       color: Colors.black87),
-            //   title: const Text(
-            //     "Payment Methods",
-            //     style: TextStyle(color: Colors.black87),
-            //   ),
-            //   trailing: const Icon(Icons.arrow_forward_ios,
-            //       size: 16, color: Colors.black54),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) => const PaymentMethodsPage()),
-            //     );
-            //   },
-            // ),
-            const Divider(thickness: 1, color: Colors.black12),
+            const SizedBox(height: 30),
           ],
         ),
       ),
