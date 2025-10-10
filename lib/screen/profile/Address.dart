@@ -23,56 +23,6 @@ class _AddressState extends State<Address> {
 
     final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
 
-    Future<void> _editAddress(
-        BuildContext context, String oldAddress, DocumentReference userDocRef) async {
-      final controller = TextEditingController(text: oldAddress);
-
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Edit Address"),
-          content: TextField(
-            controller: controller,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: "Enter new address",
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final newAddress = controller.text.trim();
-                if (newAddress.isEmpty) return;
-
-                // 1️⃣ Remove old address
-                await userDocRef.update({
-                  'address': FieldValue.arrayRemove([oldAddress])
-                });
-
-                // 2️⃣ Add new address
-                await userDocRef.update({
-                  'address': FieldValue.arrayUnion([newAddress])
-                });
-
-                // Close dialog
-                Navigator.pop(context);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Address updated successfully")),
-                );
-              },
-              child: const Text("Save"),
-            ),
-          ],
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your Addresses"),
@@ -83,64 +33,39 @@ class _AddressState extends State<Address> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const AddAddress()),
+                MaterialPageRoute(builder: (context) => const AddAddressPage()),
               );
             },
           ),
         ],
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: userDocRef.snapshots(),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser?.uid)
+            .collection('addresses')
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-
-          var userData = snapshot.data!.data() as Map<String, dynamic>?;
-
-          if (userData == null || userData['address'] == null) {
-            return const Center(
-              child: Text("Your saved addresses will show here"),
-            );
-          }
-
-          List addresses = List.from(userData['address']);
-
-          if (addresses.isEmpty) {
-            return const Center(
-              child: Text("Your saved addresses will show here"),
-            );
+          if (!snapshot.hasData) return const CircularProgressIndicator();
+          final docs = snapshot.data!.docs;
+          if (docs.isEmpty) {
+            return const Center(child: Text("No addresses added yet"));
           }
 
           return ListView.builder(
-            itemCount: addresses.length,
+            itemCount: docs.length,
             itemBuilder: (context, index) {
+              final data = docs[index].data();
               return ListTile(
-                leading: const Icon(Icons.home),
-                title: Text(addresses[index]),
-                onTap: () => _editAddress(context, addresses[index], userDocRef),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    // Remove from Firestore
-                    await userDocRef.update({
-                      'address': FieldValue.arrayRemove([addresses[index]])
-                    });
-                  },
-                ),
+                title: Text(data['fullName']),
+                subtitle: Text("${data['house']}, ${data['city']}"),
               );
             },
           );
         },
-      ),
+      )
+
     );
   }
-
-
-
-
-
-
-
-
-
-
 }

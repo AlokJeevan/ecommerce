@@ -5,7 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5fbc4af7-124a-4f19-8b2b-aefd79efcc25" name="Changes" comment="change sign in sign out">
+      <change afterPath="$PROJECT_DIR$/lib/screen/profile/wishlist/ProductItem.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screen/profile/Address.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screen/profile/Address.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screen/profile/addAddress.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screen/profile/addAddress.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/screen/profile/profile.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/screen/profile/profile.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,6 +66,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\HongMingWang\Desktop\Code\ecommerceAlok\lib\screen\profile\wishlist" />
       <recent name="C:\Users\HongMingWang\Desktop\Code\ecommerceAlok\lib\screen\profile" />
     </key>
   </component>
@@ -108,13 +114,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/lib/screen/profile/profile.dart</url>
-          <line>152</line>
+          <line>151</line>
           <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/lib/screen/profile/Address.dart</url>
-          <line>113</line>
-          <option name="timeStamp" value="9" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

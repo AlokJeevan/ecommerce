@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/screen/profile/paymetMethods.dart';
+import 'package:ecommerce/screen/profile/wishlist/wishlist.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -92,9 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: FaIcon(
                       userGender == "Male"
                           ? FontAwesomeIcons.person
-                          : userGender == "Female"
-                          ? FontAwesomeIcons.personDress
-                          : FontAwesomeIcons.user, // default neutral icon
+                          : FontAwesomeIcons.personDress,
                       size: 45,
                       color: Colors.black87,
                     ),
@@ -151,7 +150,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 userGender = result['gender'];
                               });
                               await _auth.currentUser!
-                                  .updateDisplayName(result['displayname']);
+                                  .updateDisplayName(result['name']);
                             }
                           },
                         ),
@@ -233,6 +232,25 @@ class _ProfilePageState extends State<ProfilePage> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => const PaymentMethodsPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            /// --- Wishlist / Favorites ---
+            ListTile(
+              leading:
+              const Icon(Icons.favorite_border, color: Colors.black87),
+              title: const Text(
+                "Wishlist / Favorites",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WishlistPage()),
                 );
               },
             ),
