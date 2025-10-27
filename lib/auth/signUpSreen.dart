@@ -1,8 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/auth/signInScreen.dart';
 import 'package:ecommerce/auth/wrapper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,17 +13,56 @@ class SignUpScreen extends StatefulWidget {
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-// final databaseReference = FirebaseFirestore.instance.ref("storeData");
-
 class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _obscurePassword = true;
 
-  signUp()async{
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text, password: passwordController.text);
-    Get.to(Wrapper());
+  Future<void> signUp() async {
+    try {
+      // Create user in Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      // Get the created user
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // Save user info to Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'email': user.email,
+          'displayName': '',
+          'photoURL': '',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      // Go to wrapper after signup success
+      Get.to(Wrapper());
+    } on FirebaseAuthException catch (e) {
+      String message = 'An error occurred.';
+      if (e.code == 'email-already-in-use') {
+        message = 'This email is already registered.';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email format.';
+      } else if (e.code == 'weak-password') {
+        message = 'Your password is too weak.';
+      }
+
+      Get.snackbar('Sign Up Failed', message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar('Error', e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white);
+    }
   }
 
   @override
@@ -39,7 +78,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 120),
+                    const SizedBox(height: 20),
+
+                    // 🔙 Back button
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back,
+                            size: 28, color: Colors.black),
+                        onPressed: () {
+                          Get.off(() => SignInScreen());
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
 
                     // App name
                     Text(
@@ -53,9 +106,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 30),
 
                     // Create account text
-                    Text(
+                    const Text(
                       "Create an account",
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -127,7 +180,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: (()=>signUp()),
+                        onPressed: () => signUp(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
