@@ -1,5 +1,8 @@
+import 'package:ecommerce/auth/signInScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ForgetScreen extends StatefulWidget {
@@ -88,7 +91,21 @@ class _ForgetScreenState extends State<ForgetScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 120),
+                    const SizedBox(height: 20),
+
+                    // 🔙 Back button
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back,
+                            size: 28, color: Colors.black),
+                        onPressed: () {
+                          Get.off(() => SignInScreen());
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
 
                     // App name
                     Text(

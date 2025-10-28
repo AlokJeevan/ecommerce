@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/auth/signUpSreen.dart';
 import 'package:ecommerce/auth/wrapper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ecommerce/auth/forget.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -26,12 +28,35 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
+  Future<void> checkOrCreateUserInFirestore(User user) async {
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    final docSnapshot = await userDoc.get();
+
+    if (!docSnapshot.exists) {
+      // Create user document if not found
+      await userDoc.set({
+        'uid': user.uid,
+        'email': user.email,
+        'displayName': user.displayName ?? '',
+        'photoURL': user.photoURL ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
   Future<void> signInEmail() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await checkOrCreateUserInFirestore(user); // 👈 ensure Firestore record exists
+      }
+
       setState(() {
         errorMessage = null; // clear errors
       });
@@ -62,22 +87,38 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Trigger Google Sign-In
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (kIsWeb) {
+        // Web: use FirebaseAuth popup flow
+        final GoogleAuthProvider provider = GoogleAuthProvider();
+        final UserCredential userCred = await FirebaseAuth.instance.signInWithPopup(provider);
 
+        final user = userCred.user;
+        if (user != null) {
+          await checkOrCreateUserInFirestore(user);
+        }
+        return userCred;
+      }
+
+      // Mobile/desktop: use google_sign_in package
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null; // User canceled
 
-      // Obtain auth details
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create credential for Firebase
-      final credential = GoogleAuthProvider.credential(
+      final OAuthCredential credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
         accessToken: googleAuth.accessToken,
       );
 
+      UserCredential userCred = await FirebaseAuth.instance.signInWithCredential(credential);
+
+      final user = userCred.user;
+      if (user != null) {
+        await checkOrCreateUserInFirestore(user);
+      }
+      return userCred;
+
       // Sign in to Firebase
-      return await FirebaseAuth.instance.signInWithCredential(credential);
+      // return await FirebaseAuth.instance.signInWithCredential(credential);
     } catch (e) {
       print("Google sign-in error: $e");
       return null;
@@ -265,11 +306,13 @@ class _SignInScreenState extends State<SignInScreen> {
                           //   }
                           // },
                           onPressed: () async {
-                        UserCredential? user = await signInWithGoogle();
-                        if (user != null) {
-                        Get.offAll(Wrapper());
-                        }
-                        },
+                            UserCredential? user = await signInWithGoogle();
+                            if (user != null) {
+                              // check user data at firestore
+
+                              Get.offAll(Wrapper());
+                            }
+                          },
                           icon: Image.network(
                             "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png",
                             height: 20,
@@ -328,7 +371,7 @@ class _SignInScreenState extends State<SignInScreen> {
             Center(
               child: TextButton(
                 onPressed: (()=>Get.to(SignUpScreen())),
-                  // TODO: Add your "Register Now" logic here
+                // TODO: Add your "Register Now" logic here
                 child: Text("Create New Account",
                   style: TextStyle(
                     color: Colors.black,

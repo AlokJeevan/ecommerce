@@ -1,8 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/screen/profile/aboutUs.dart';
+import 'package:ecommerce/screen/profile/paymetMethods.dart';
+import 'package:ecommerce/screen/profile/privacyPolicy.dart';
+import 'package:ecommerce/screen/profile/wishlist.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'Address.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../auth/signInScreen.dart';
+import 'Address/Address.dart';
 import 'editProfile.dart';
+import 'helpCenter.dart';
+import 'myOrders.dart';
+import 'notification.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -23,14 +32,40 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserInfo();
   }
 
-  void _loadUserInfo() {
+  void _loadUserInfo() async {
     final user = _auth.currentUser;
-    if (user != null) {
+    if (user == null) return;
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
       setState(() {
-        userName = user.displayName ?? "User";
-        userEmail = user.email ?? "No email";
+        userName = (data['displayname'] ?? 'User').toLowerCase();
+        userEmail = data['email'] ?? user.email ?? 'No email';
+        userGender = data['gender'] ?? 'unknown';
+      });
+    } else {
+      // fallback if Firestore doc missing
+      setState(() {
+        userName = (user.displayName ?? 'User').toLowerCase();
+        userEmail = user.email ?? 'No email';
       });
     }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await _auth.signOut();
+    if (!mounted) return;
+
+    // 🔹 Navigate to login screen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => SignInScreen()),
+    );
   }
 
   @override
@@ -39,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         title: const Text("My Profile"),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey.shade100,
         elevation: 0.5,
         centerTitle: true,
         foregroundColor: Colors.black,
@@ -52,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              color: Colors.grey.shade200,
+              color: Colors.grey.shade100,
               child: Row(
                 children: [
                   // --- Profile Avatar (FontAwesome icon changes based on gender) ---
@@ -115,7 +150,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                             if (result != null) {
                               setState(() {
-                                userName = result['name'];
+                                userName = result['displayname'];
                                 userGender = result['gender'];
                               });
                               await _auth.currentUser!
@@ -147,6 +182,27 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 10),
 
+            /// --- My Orders ---
+            ListTile(
+              leading: const Icon(Icons.shopping_bag_outlined,
+                  color: Colors.black87),
+              title: const Text(
+                "My Orders",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                // 🔹 Navigate to My Orders Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyOrdersPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            /// --- Saved Addresses ---
             ListTile(
               leading: const Icon(Icons.location_on_outlined,
                   color: Colors.black87),
@@ -164,6 +220,173 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
             const Divider(thickness: 1, color: Colors.black12),
+
+            /// --- Payment Methods ---
+            ListTile(
+              leading: const Icon(Icons.credit_card_outlined,
+                  color: Colors.black87),
+              title: const Text(
+                "Payment Methods",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const PaymentMethodsPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            /// --- Wishlist / Favorites ---
+            ListTile(
+              leading:
+              const Icon(Icons.favorite_border, color: Colors.black87),
+              title: const Text(
+                "Wishlist / Favorites",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WishlistPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            /// --- Notifications ---
+            ListTile(
+              leading: const Icon(Icons.notifications_none, color: Colors.black87),
+              title: const Text(
+                "Notifications",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NotificationsPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+
+            const SizedBox(height: 20),
+
+            /// --- Support & Others Section ---
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                "Support & Others",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            /// --- Help Center ---
+            ListTile(
+              leading: const Icon(Icons.help_outline, color: Colors.black87),
+              title: const Text(
+                "Help Center",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HelpCenterPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            /// --- Privacy Policy ---
+            ListTile(
+              leading:
+              const Icon(Icons.privacy_tip_outlined, color: Colors.black87),
+              title: const Text(
+                "Privacy Policy",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            /// --- About Us ---
+            ListTile(
+              leading: const Icon(Icons.info_outline, color: Colors.black87),
+              title: const Text(
+                "About Us",
+                style: TextStyle(color: Colors.black87),
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios,
+                  size: 16, color: Colors.black54),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutUsPage()),
+                );
+              },
+            ),
+            const Divider(thickness: 1, color: Colors.black12),
+
+            const SizedBox(height: 20),
+
+            /// --- Become to seller ---
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                "Become to Seller",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            /// --- Logout Button ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.logout, color: Colors.black87, size: 18),
+                label: const Text(
+                  "Logout",
+                  style: TextStyle(color: Colors.black87, fontSize: 16),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.black45),
+                  foregroundColor: Colors.black87,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  minimumSize: const Size(double.infinity, 45),
+                ),
+                onPressed: () async {
+                  await _logout(context);
+                },
+              ),
+            ),
           ],
         ),
       ),
